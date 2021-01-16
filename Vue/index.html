@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <div id="app">
+      <!-- 插值表达式 -->
+      <div>{{message}}</div>
+      <!-- 可以使用简单的运算符，但不支持语句 -->
+      <div>{{ message + message }}</div>
+      <!-- 给html标签属性绑定值 -->
+      <div v-bind:id="message"></div>
+      <!-- <ul>
+        <todo-item v-for="item in list" test="???" :title="item.title" :del="item.del"></todo-item>
+      </ul> -->
+      <todo-list></todo-list>
+    </div>
+    <script>
+      // Vue 组件 todo-item
+      Vue.component('todo-item', {
+        // 属性声明
+        props: {
+          title: String,
+          del: {
+            type: Boolean,
+            default: false
+          }
+        },
+        // 模板(只会渲染第一个根节点)
+        template: `
+                <li>
+                    <span v-if="!del">{{ title }}</span>
+                    <span v-else style="text-decoration: line-through;">{{title}}</span>
+                    <!-- @是v-on的简写,用于绑定事件监听器，普通元素只能监听DOM事件，触发时执行一些javaScript代码 -->
+                    <!-- v-on:click="func()" 的缩写时 @click="func()" -->
+                    <button v-show="!del" @click="handleClick">删除</button>
+                </li>
+            `,
+        // 数据
+        data: function () {
+          return {
+            // data 需要一个方法，返回一个对象。因为组件需要复用，在js
+            // 中对象是引用类型，在一个地方的改动会影响其他地方的使用
+            // 所以我们希望每一个组件的data都返回一个独一无二的对象
+          };
+        },
+        // 方法
+        methods: {
+          handleClick() {
+            console.log('点击删除按钮')
+            // 如果有更多的参数可以持续的添加
+            this.$emit('delete', this.title)
+          }
+        }
+      });
+
+      // Vue 组件 todo-list
+      Vue.component('todo-list', {
+        template: `
+            <ul>
+                <!-- 1. 没有声明的属性如 test, 会被自动挂载到模板的根节点上 -->
+                <!-- 2. 对于自定义元素，也可以监听其子组件触发的自定义事件，如下面的 @delete="func()" -->
+                <todo-item v-for="item in list" @delete="handleDelete" test="???" :title="item.title" :del="item.del"></todo-item>
+            </ul>
+            `,
+        data: function () {
+          return {
+            list: [
+              {
+                title: 'vue',
+                del: false
+              },
+              {
+                title: 'react',
+                del: true
+              }
+            ]
+          };
+        },
+        methods: {
+          handleDelete(val) {
+            console.log('handleDelete', val)
+          }
+        }
+      });
+     
+      // 新建一个vue实例
+      var vm = new Vue({
+        el: '#app',
+        data: {
+          // 为什么控制台可以直接用vm.message获取值，而不是vm.data.message?
+          // data中属性在执行new Vue()时变成vue对象实例属性，并给属性添加get和set方法，
+          message: 'hello world'
+        }
+      });
+    </script>
+  </body>
+</html>
